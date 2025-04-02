@@ -3,15 +3,20 @@ name = "django-project"
 version = "0.1.0"
 description = ""
 authors = [
-    {name = "JunHo-L",email = "wnsgh4368@naver.com"}
+    {name = "miu1217",email = "hyun671217@daum.net"}
 ]
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "django (>=5.1.7,<6.0.0)"
+    "django (>=5.1.7,<6.0.0)",
+    "django-restframework (>=0.0.1,<0.0.2)"
 ]
 
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.group.dev.dependencies]
+drf-yasg = "^1.21.10"
+
