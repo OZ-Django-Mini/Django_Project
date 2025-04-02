@@ -19,5 +19,5 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("users/", include("user.urls")),  #User 앱 라우팅
+    path("user/", include("user.urls")),  #User 앱 라우팅
 ]
