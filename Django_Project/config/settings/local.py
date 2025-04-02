@@ -7,7 +7,7 @@ ALLOWED_HOSTS = []
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'instagram',
+        'NAME': 'Django_Project',
         'USER': 'dev_user',
         'PASSWORD': 'securepassword',
         'HOST': 'localhost',
