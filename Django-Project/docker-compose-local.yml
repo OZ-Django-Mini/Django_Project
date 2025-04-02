@@ -9,7 +9,7 @@ services:
       POSTGRES_DB: Django_Project
       POSTGRES_USER: dev_user
       POSTGRES_PASSWORD: securepassword
-      PGDATA: /var/lib/postgresql/data/instagram/
+      PGDATA: /var/lib/postgresql/data/Django-Project/
     ports:
       - "54322:5432"
 
