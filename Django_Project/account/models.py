@@ -46,9 +46,10 @@ class Account(models.Model):
         db_column='deleted_at')
 
     def __str__(self):
-        return f"{self.account_number} ({self.user})"
+        return f"{self.account_number} ({self.user_id})"
 
     class Meta:
         db_table = 'account'
+
 
 

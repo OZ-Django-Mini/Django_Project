@@ -19,7 +19,8 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("user/", include("user.urls")),
+    path("user/", include("user.urls")),#User 앱 라우팅
+    path("account/", include("account.urls")),
     path('account_history/', include('account_history.urls')),
 #User 앱 라우팅
 ]
