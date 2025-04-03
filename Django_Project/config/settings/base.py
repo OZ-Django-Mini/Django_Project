@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "django_extensions",
     "user.apps.UserConfig",
     "account",
+    "account_history",
 ]
 
 MIDDLEWARE = [
