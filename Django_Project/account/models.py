@@ -3,9 +3,9 @@ from django.db import models
 from django.conf import settings
 
 class Account(models.Model):
-    account_id = models.UUIDField(
+
+    account_id = models.AutoField(
         primary_key=True,
-        default=uuid.uuid4,
         editable=False,
         db_column='account_id'
     )
@@ -18,11 +18,9 @@ class Account(models.Model):
     )
 
     #계좌 번호
-    account_number = models.CharField(
-        max_length=20,
-        null=True,
-        blank=True,
-        db_column='account_number',
+    account_number =  models.UUIDField(
+        editable=False,
+        db_column='account_number'
     )
 
     # 잔액
