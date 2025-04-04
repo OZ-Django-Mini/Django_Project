@@ -4,15 +4,14 @@
 from rest_framework import generics, status, filters
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from django.db import transaction as db_transaction  # 이름 충돌 방지
+from django.db import transaction as db_transaction
 from django.utils import timezone
 from django.db.models import Q
 from datetime import timedelta
 from .models import AccountHistory
-from account.models import Account
+from accounts.models import Account
 from .serializers import (
     AccountHistorySerializer,
-    AccountHistoryCreateSerializer,
     AccountHistoryUpdateSerializer,
     AccountHistoryFilterSerializer
 )
@@ -80,72 +79,14 @@ class AccountHistoryListAPIView(generics.ListAPIView):
         return queryset
 
 
-class AccountHistoryCreateAPIView(generics.CreateAPIView):
-    """
-    계좌 거래 내역 생성 API
-
-    새로운 거래 내역을 생성하고 계좌 잔액을 업데이트합니다.
-    """
-    serializer_class = AccountHistoryCreateSerializer
-    permission_classes = [IsAuthenticated]
-
-    @db_transaction.atomic
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        # 검증된 데이터 가져오기
-        account_id = serializer.validated_data['account_id']
-        amount = serializer.validated_data['amount']
-        history_type = serializer.validated_data['type']
-        description = serializer.validated_data.get('description', '')
-
-        # 계좌 정보 조회
-        account = Account.objects.select_for_update().get(account_id=account_id)
-
-        # 거래 유형에 따른 잔액 업데이트
-        if history_type == 'DEPOSIT':
-            # 입금: 잔액 증가
-            account.balance += amount
-        elif history_type == 'WITHDRAWAL':
-            # 출금: 잔액 감소
-            account.balance -= amount
-        elif history_type == 'TRANSFER':
-            # 이체: 잔액 감소
-            account.balance -= amount
-
-        # 계좌 업데이트
-        account.save()
-
-        # 거래 내역 생성
-        account_history = AccountHistory.objects.create(
-            account=account,
-            user=request.user,
-            amount=amount,
-            type=history_type,
-            description=description,
-        )
-
-        # 응답 데이터 생성
-        response_serializer = AccountHistorySerializer(account_history)
-        headers = self.get_success_headers(response_serializer.data)
-
-        return Response(
-            {
-                "message": f"{account_history.get_type_display()}이(가) 성공적으로 처리되었습니다.",
-                "account_history": response_serializer.data,
-                "new_balance": float(account.balance)
-            },
-            status=status.HTTP_201_CREATED,
-            headers=headers
-        )
-
-
 class AccountHistoryDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     """
     계좌 거래 내역 상세 API
 
     특정 거래 내역을 조회, 수정, 삭제하는 API입니다.
+    - GET: 거래 내역 상세 정보 조회
+    - PATCH: 거래 내역 설명 수정
+    - DELETE: 거래 내역 삭제 (24시간 이내의 거래만 가능)
     """
     permission_classes = [IsAuthenticated]
     lookup_field = 'account_history_id'

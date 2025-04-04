@@ -12,9 +12,6 @@ urlpatterns = [
     # 거래 내역 목록 조회
     path('', AccountHistoryListAPIView.as_view(), name='account-history-list'),
 
-    # 새 거래 내역 생성
-    path('create/', AccountHistoryCreateAPIView.as_view(), name='account-history-create'),
-
     # 특정 거래 내역 조회/수정/삭제
     path('<int:account_history_id>/', AccountHistoryDetailAPIView.as_view(),
          name='account-history-detail'),
