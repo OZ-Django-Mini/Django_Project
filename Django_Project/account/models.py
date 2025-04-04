@@ -41,7 +41,6 @@ class Account(models.Model):
 
     # 삭제 시각
     deleted_at = models.DateTimeField(
-        auto_now=True,
         null=True,
         blank=True,
         db_column='deleted_at')

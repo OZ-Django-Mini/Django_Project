@@ -12,7 +12,8 @@ class AccountCreateSerializer(serializers.ModelSerializer):
         account = Account.objects.create(
             user_id=validated_data['user_id'],
             balance=validated_data['balance'],
-            account_number= uuid.uuid4()
+            account_number= uuid.uuid4(),
+            deleted_at = None
             )
         return account
 
@@ -61,3 +62,8 @@ class AccountTransactionSerializer(serializers.ModelSerializer):
 
         return instance
 
+
+class AccountDeleteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Account
+        fields = ['user_id', 'account_number']
