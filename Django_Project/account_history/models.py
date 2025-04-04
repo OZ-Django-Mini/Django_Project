@@ -32,8 +32,6 @@ class AccountHistory(models.Model):
 
     class Meta:
         db_table = 'account_history'
-        verbose_name = _('이체내역')
-        verbose_name_plural = _('이체내역')
         ordering = ['-amount_date']
 
     def __str__(self):
