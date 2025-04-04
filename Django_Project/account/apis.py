@@ -1,5 +1,5 @@
-from rest_framework.exceptions import APIException
-from rest_framework.generics import CreateAPIView, UpdateAPIView, get_object_or_404
+from rest_framework.exceptions import APIException ,PermissionDenied
+from rest_framework.generics import CreateAPIView, UpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -10,6 +10,8 @@ from account.serializers import (
     AccountCreateSerializer,
     AccountReadSerializer,
     AccountTransactionSerializer)
+from django.utils import timezone
+from django.shortcuts import get_object_or_404
 
 
 #계좌 생성
@@ -50,6 +52,23 @@ class AccountTransactionAPIView(APIView):
                     status=201
                 )
             return Response(serializer.errors, status=400)
+
+        except Exception as e:
+            raise APIException(f"서버 오류 발생: {str(e)}")
+
+class AccountDeleteAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, account_number):
+        try:
+            account = get_object_or_404(Account, account_number=account_number)
+            if account.user_id != request.user:
+                raise PermissionDenied
+
+            account.deleted_at = timezone.now()
+            account.save()
+
+            return Response({"message": "계좌가 삭제되었습니다."}, status=200)
 
         except Exception as e:
             raise APIException(f"서버 오류 발생: {str(e)}")
