@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "user.apps.UserConfig",
     "account",
     "account_history",
+    "rest_framework_simplejwt.token_blacklist",
 ]
 
 MIDDLEWARE = [
@@ -145,3 +146,4 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': True,
 }
+
