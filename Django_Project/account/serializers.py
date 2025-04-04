@@ -1,5 +1,6 @@
 import uuid
 from .models import Account
+from account_history.models import AccountHistory
 from rest_framework import serializers
 
 class AccountCreateSerializer(serializers.ModelSerializer):
@@ -30,7 +31,7 @@ class AccountTransactionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Account
-        fields = ['user_id', 'account_number', 'balance', 'transaction_type', 'amount']
+        fields = ['user_id', 'account_number', 'transaction_type', 'amount']
 
 
     def update(self, instance, validated_data):
@@ -50,6 +51,13 @@ class AccountTransactionSerializer(serializers.ModelSerializer):
 
         instance.save()
 
+        # ✅ 거래 내역 저장 (account_history 앱)
+        AccountHistory.objects.create(
+            user=instance.user_id,
+            account=instance,
+            amount=amount,
+            type=transaction_type
+        )
 
-
+        return instance
 
