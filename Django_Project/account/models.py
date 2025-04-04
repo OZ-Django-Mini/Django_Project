@@ -17,6 +17,7 @@ class Account(models.Model):
         related_name='account'
     )
 
+
     #계좌 번호
     account_number =  models.UUIDField(
         editable=False,
