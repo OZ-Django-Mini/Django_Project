@@ -2,6 +2,7 @@
 # 거래 내역 관련 API 뷰 정의
 
 from rest_framework import generics, status, filters
+from rest_framework.exceptions import APIException
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.db import transaction as db_transaction
@@ -30,53 +31,49 @@ class AccountHistoryListAPIView(generics.ListAPIView):
     ordering = ['-amount_date']  # 기본 정렬: 최신순
 
     def get_queryset(self):
-        """사용자 소유 계좌의 거래 내역만 반환"""
-        user = self.request.user
+            try:
 
-        # 삭제되지 않은 거래 내역만 조회
-        queryset = AccountHistory.objects.filter(
-            Q(user=user) | Q(account__user=user),  # 사용자가 직접 수행하거나 사용자 계좌의 거래
-            deleted_at__isnull=True  # 삭제되지 않은 거래
-        ).distinct()
+                user = self.request.user
 
-        # 필터 파라미터 처리
-        filter_serializer = AccountHistoryFilterSerializer(data=self.request.query_params)
-        if filter_serializer.is_valid():
-            filters = filter_serializer.validated_data
+                accounts = Account.objects.filter(user_id=user)
 
-            # 계좌 ID 필터링
-            account_id = filters.get('account_id')
-            if account_id:
-                # 해당 계좌가 사용자 소유인지 확인
-                if Account.objects.filter(account_id=account_id, user=user).exists():
-                    queryset = queryset.filter(account_id=account_id)
-                else:
-                    return AccountHistory.objects.none()
+                queryset = AccountHistory.objects.filter(
+                    account__in=accounts,
+                    deleted_at__isnull=True
+                )
 
-            # 거래 유형 필터링
-            history_type = filters.get('type')
-            if history_type:
-                queryset = queryset.filter(type=history_type)
+                # 필터 파라미터
+                filter_serializer = AccountHistoryFilterSerializer(data=self.request.query_params)
+                filter_serializer.is_valid(raise_exception=True)
+                filters_data = filter_serializer.validated_data
 
-            # 금액 범위 필터링
-            min_amount = filters.get('min_amount')
-            if min_amount:
-                queryset = queryset.filter(amount__gte=min_amount)
+                # 계좌 필터링
+                account_number = filters_data.get('account_number')
+                if account_number:
+                    if Account.objects.filter(account_number=account_number, user=user).exists():
+                        queryset = queryset.filter(account__account_number=account_number)
+                    else:
+                        return AccountHistory.objects.none()
+                # 타입 필터링
+                if filters_data.get('type'):
+                    queryset = queryset.filter(type=filters_data['type'])
 
-            max_amount = filters.get('max_amount')
-            if max_amount:
-                queryset = queryset.filter(amount__lte=max_amount)
+                # 금액 필터링
+                if filters_data.get('min_amount'):
+                    queryset = queryset.filter(amount__gte=filters_data['min_amount'])
+                if filters_data.get('max_amount'):
+                    queryset = queryset.filter(amount__lte=filters_data['max_amount'])
 
-            # 날짜 범위 필터링
-            start_date = filters.get('start_date')
-            if start_date:
-                queryset = queryset.filter(amount_date__date__gte=start_date)
+                # 날짜 필터링
+                if filters_data.get('start_date'):
+                    queryset = queryset.filter(amount_date__date__gte=filters_data['start_date'])
+                if filters_data.get('end_date'):
+                    queryset = queryset.filter(amount_date__date__lte=filters_data['end_date'])
 
-            end_date = filters.get('end_date')
-            if end_date:
-                queryset = queryset.filter(amount_date__date__lte=end_date)
+                return queryset
 
-        return queryset
+            except Exception as e:
+                raise APIException(f"서버 오류 발생: {str(e)}")
 
 
 class AccountHistoryDetailAPIView(generics.RetrieveUpdateDestroyAPIView):

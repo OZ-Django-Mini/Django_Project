@@ -13,7 +13,8 @@ class AccountHistorySerializer(serializers.ModelSerializer):
     # 추가 필드
     type_display = serializers.CharField(source='get_type_display', read_only=True)
     account_number = serializers.CharField(source='account.account_number', read_only=True)
-    username = serializers.CharField(source='user.name', read_only=True)
+    username = serializers.CharField(source='user.email', read_only=True)
+
 
     class Meta:
         model = AccountHistory
