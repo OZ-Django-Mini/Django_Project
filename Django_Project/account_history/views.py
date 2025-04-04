@@ -9,7 +9,7 @@ from django.utils import timezone
 from django.db.models import Q
 from datetime import timedelta
 from .models import AccountHistory
-from accounts.models import Account
+from account.models import Account
 from .serializers import (
     AccountHistorySerializer,
     AccountHistoryUpdateSerializer,

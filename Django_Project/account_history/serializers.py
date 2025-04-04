@@ -3,7 +3,7 @@
 
 from rest_framework import serializers
 from .models import AccountHistory
-from accounts.models import Account
+from account.models import Account
 from decimal import Decimal
 
 
