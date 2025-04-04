@@ -123,7 +123,6 @@ class AccountHistoryDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
 
         - 최근 24시간 이내의 거래만 삭제 가능
         - 실제 삭제가 아닌 소프트 삭제 구현
-        - 거래 취소 시 계좌 잔액도 원상복구
         """
         instance = self.get_object()
 
@@ -135,26 +134,12 @@ class AccountHistoryDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # 계좌 잔액 조정
-        account = Account.objects.select_for_update().get(account_id=instance.account.account_id)
-
-        # 거래 유형에 따라 잔액 원상복구
-        if instance.type == 'DEPOSIT':
-            # 입금 취소: 잔액 감소
-            account.balance -= instance.amount
-        elif instance.type == 'WITHDRAWAL' or instance.type == 'TRANSFER':
-            # 출금/이체 취소: 잔액 증가
-            account.balance += instance.amount
-
-        account.save()
-
         # 소프트 삭제 실행
         instance.soft_delete()
 
         return Response(
             {
-                "message": "거래가 성공적으로 취소되었습니다.",
-                "new_balance": float(account.balance)
+                "message": "거래 내역이 성공적으로 삭제되었습니다."
             },
             status=status.HTTP_200_OK
         )
