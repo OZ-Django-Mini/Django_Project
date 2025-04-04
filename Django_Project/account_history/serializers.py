@@ -37,6 +37,7 @@ class AccountHistoryFilterSerializer(serializers.Serializer):
     """거래 내역 필터링을 위한 시리얼라이저"""
 
     account_id = serializers.IntegerField(required=False)
+    account_number = serializers.CharField(required=False)
     type = serializers.ChoiceField(choices=AccountHistory.TYPE_CHOICES, required=False)
     min_amount = serializers.DecimalField(max_digits=10, decimal_places=2, required=False)
     max_amount = serializers.DecimalField(max_digits=10, decimal_places=2, required=False)

@@ -22,7 +22,7 @@ class AccountHistoryListAPIView(generics.ListAPIView):
     """
     계좌 거래 내역 목록 조회 API
 
-    사용자의 모든 계좌에 대한 거래 내역을 조회하고 필터링합니다.
+    쿼리 파라미터로 받은 계좌번호로 거래내역을 필터링하여 조회합니다.
     """
     serializer_class = AccountHistorySerializer
     permission_classes = [IsAuthenticated]
@@ -31,49 +31,25 @@ class AccountHistoryListAPIView(generics.ListAPIView):
     ordering = ['-amount_date']  # 기본 정렬: 최신순
 
     def get_queryset(self):
-            try:
+        try:
+            user = self.request.user
+            account_number = self.request.query_params.get("account_number")
 
-                user = self.request.user
+            # 계좌번호로 계좌 ID 조회
+            account = Account.objects.filter(account_number=account_number, user=user).first()
+            if not account:
+                return AccountHistory.objects.none()
 
-                accounts = Account.objects.filter(user_id=user)
+            # 계좌 ID로 거래 내역 필터링 (deleted_at이 NULL인 것만)
+            queryset = AccountHistory.objects.filter(
+                account_id=account.id,
+                deleted_at__isnull=True
+            )
 
-                queryset = AccountHistory.objects.filter(
-                    account__in=accounts,
-                    deleted_at__isnull=True
-                )
+            return queryset
 
-                # 필터 파라미터
-                filter_serializer = AccountHistoryFilterSerializer(data=self.request.query_params)
-                filter_serializer.is_valid(raise_exception=True)
-                filters_data = filter_serializer.validated_data
-
-                # 계좌 필터링
-                account_number = filters_data.get('account_number')
-                if account_number:
-                    if Account.objects.filter(account_number=account_number, user=user).exists():
-                        queryset = queryset.filter(account__account_number=account_number)
-                    else:
-                        return AccountHistory.objects.none()
-                # 타입 필터링
-                if filters_data.get('type'):
-                    queryset = queryset.filter(type=filters_data['type'])
-
-                # 금액 필터링
-                if filters_data.get('min_amount'):
-                    queryset = queryset.filter(amount__gte=filters_data['min_amount'])
-                if filters_data.get('max_amount'):
-                    queryset = queryset.filter(amount__lte=filters_data['max_amount'])
-
-                # 날짜 필터링
-                if filters_data.get('start_date'):
-                    queryset = queryset.filter(amount_date__date__gte=filters_data['start_date'])
-                if filters_data.get('end_date'):
-                    queryset = queryset.filter(amount_date__date__lte=filters_data['end_date'])
-
-                return queryset
-
-            except Exception as e:
-                raise APIException(f"서버 오류 발생: {str(e)}")
+        except Exception as e:
+            raise APIException(f"서버 오류 발생: {str(e)}")
 
 
 class AccountHistoryDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
