@@ -20,6 +20,6 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("user/", include("user.urls")),
-    path('api/', include('account_history.urls')),
+    path('account_history/', include('account_history.urls')),
 #User 앱 라우팅
 ]
