@@ -11,4 +11,5 @@ urlpatterns = [
     #POST /account/create -> 거래내역 생성
     path('create', apis.AccountTransactionAPIView.as_view(), name='account_create'),
 
+    path('<uuid:account_number>/delete/', apis.AccountDeleteAPIView.as_view(), name='account_delete'),
 ]
